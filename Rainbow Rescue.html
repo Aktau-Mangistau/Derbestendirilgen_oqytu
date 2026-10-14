@@ -1,0 +1,1124 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Rainbow Rescue</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@500;700;800&family=Unbounded:wght@600;800&display=swap" rel="stylesheet">
+<style>
+/* Layout: one column (wider in class mode). The world starts grey and only the rainbow carries color;
+   every finished level paints one band back. UI chrome stays neutral so color is the reward.
+   Built for primary pupils: big tap targets, short English, picture-first tasks. */
+:root{
+  --bg:#EDEFF4; --panel:#FFFFFF; --ink:#161926; --muted:#596077; --line:#D3D8E4; --off:#CDD2DE;
+  --ring:rgba(90,98,125,.45); --stage:#12141D; --stage-ink:#F3F4F9;
+  --btn-bg:#161926; --btn-fg:#FFFFFF; --good:#14793F; --on-good:#FFFFFF; --bad:#BF342D;
+  --f-display:'Unbounded','Arial Black',system-ui,sans-serif;
+  --f-body:'Nunito',system-ui,-apple-system,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --bg:#0E1018; --panel:#171A27; --ink:#F1F2F8; --muted:#9AA1B8; --line:#2A2F44; --off:#2C3146;
+    --ring:rgba(170,178,205,.45); --stage:#090A10; --stage-ink:#F3F4F9;
+    --btn-bg:#F1F2F8; --btn-fg:#12141D; --good:#4CC77C; --on-good:#0C2616; --bad:#FF7B71; color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0E1018; --panel:#171A27; --ink:#F1F2F8; --muted:#9AA1B8; --line:#2A2F44; --off:#2C3146;
+  --ring:rgba(170,178,205,.45); --stage:#090A10; --stage-ink:#F3F4F9;
+  --btn-bg:#F1F2F8; --btn-fg:#12141D; --good:#4CC77C; --on-good:#0C2616; --bad:#FF7B71; color-scheme:dark;
+}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font:500 18px/1.5 var(--f-body)}
+button{font:inherit;color:inherit;cursor:pointer;-webkit-tap-highlight-color:transparent}
+button:disabled{cursor:default}
+button:focus-visible,summary:focus-visible,input:focus-visible,[data-part]:focus-visible{outline:3px solid var(--ink);outline-offset:3px}
+.stage button:focus-visible{outline-color:#fff}
+.wrap{max-width:720px;margin-inline:auto;padding-inline:16px;padding-block:18px 48px}
+@media (min-width:900px){body.cls .wrap{max-width:1000px;zoom:1.3}}
+#confetti{position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:50}
+
+/* pattern help for color-blind pupils */
+.swp{background:var(--sw)}
+.pat-on .swp{background:var(--pat),var(--sw)}
+
+.top{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:22px}
+.brand{font:800 12px/1 var(--f-display);letter-spacing:.14em;text-transform:uppercase}
+.tools{display:flex;gap:8px;flex-wrap:wrap}
+.pill{border:2px solid var(--line);background:var(--panel);border-radius:999px;padding:8px 16px;font-weight:800;font-size:15px}
+.pill[aria-pressed="true"]{background:var(--btn-bg);color:var(--btn-fg);border-color:var(--btn-bg)}
+
+.hero{display:grid;gap:18px;align-items:center;margin-bottom:8px}
+@media (min-width:640px){.hero{grid-template-columns:1fr 1fr;gap:28px}.hero-text{order:-1}}
+.hero-text{min-width:0}
+h1{font:800 clamp(30px,7vw,44px)/1.04 var(--f-display);margin:0 0 12px;text-wrap:balance;letter-spacing:-.02em}
+h2{text-wrap:balance}
+.lead{margin:0;color:var(--muted);max-width:38ch}
+.rb{display:block;width:100%;height:auto}
+.rb-n{font:800 22px var(--f-display);fill:var(--ink)}
+.rb-l{font:700 9px var(--f-body);fill:var(--muted);letter-spacing:.08em;text-transform:uppercase}
+.arc{fill:none;stroke-width:17;stroke-linecap:round}
+.arc.off{stroke:var(--off)}
+.arc.on{stroke-dasharray:100;stroke-dashoffset:0}
+.arc.draw{animation:draw .9s ease-out both}
+@keyframes draw{from{stroke-dashoffset:100}to{stroke-dashoffset:0}}
+
+.sec{font:800 14px/1 var(--f-display);letter-spacing:.1em;text-transform:uppercase;margin:28px 0 12px}
+.seg{display:flex;gap:8px;flex-wrap:wrap}
+.seg button{flex:1 1 0;min-width:96px;border:2px solid var(--line);background:var(--panel);border-radius:14px;padding:12px 10px;font-weight:800;font-size:18px}
+.seg button[aria-pressed="true"]{background:var(--btn-bg);color:var(--btn-fg);border-color:var(--btn-bg)}
+.note-line{margin:8px 0 0;color:var(--muted);font-size:15px}
+
+.levels{list-style:none;margin:0;padding:0;display:grid;gap:10px}
+.level{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:14px;align-items:center;width:100%;text-align:left;padding:12px 16px 12px 12px;border:2px solid var(--line);background:var(--panel);border-radius:16px;min-height:72px}
+.level:not(:disabled):hover{border-color:var(--c)}
+.level[data-state="locked"]{opacity:.55}
+.chip{width:48px;height:48px;border-radius:50%;display:grid;place-items:center;font:800 18px var(--f-display);background:var(--off);color:var(--muted)}
+.level[data-state="done"] .chip{background:var(--c);color:var(--tc)}
+.level[data-state="open"] .chip{background:transparent;color:var(--ink);box-shadow:inset 0 0 0 3px var(--c)}
+.chip.ic{font-size:24px}
+.lv-name{display:block;font-weight:800;font-size:18px}
+.lv-skill{display:block;color:var(--muted);font-size:15px}
+.lv-meta{font-weight:800;font-size:15px;white-space:nowrap}
+.lock{color:var(--muted)}
+.stars{letter-spacing:.1em;font-size:18px}
+.stars span{color:var(--off)}
+.stars span.on{color:#F2B705}
+
+.settings{margin-top:28px;border:2px solid var(--line);border-radius:16px;background:var(--panel)}
+.settings summary{cursor:pointer;padding:14px 16px;font-weight:800;list-style:none;display:flex;justify-content:space-between;align-items:center}
+.settings summary::-webkit-details-marker{display:none}
+.settings summary::after{content:"+";font-size:22px;line-height:1}
+.settings[open] summary::after{content:"\2212"}
+.set-body{display:grid;gap:16px;padding:4px 16px 18px}
+.set-row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.set-row label{font-weight:800;font-size:15px}
+.set-row input{flex:1 1 160px;min-width:0;border:2px solid var(--line);border-radius:12px;padding:9px 12px;background:var(--bg);color:var(--ink);font:inherit}
+.copybox{width:100%;min-height:96px;border:2px solid var(--line);border-radius:12px;padding:10px;background:var(--bg);color:var(--ink);font:500 14px/1.4 var(--f-body);resize:vertical}
+.ghost{border:2px solid var(--line);background:transparent;border-radius:12px;padding:9px 16px;font-weight:800;font-size:15px}
+
+.gbar{display:flex;align-items:center;gap:12px;margin-bottom:16px}
+.gtitle{flex:1;min-width:0;font:800 14px var(--f-display);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pips{display:flex;gap:6px;align-items:center}
+.pip{width:12px;height:12px;border-radius:50%;background:var(--off)}
+.pip.done{background:var(--c)}
+.pip.cur{outline:2px solid var(--ink);outline-offset:2px}
+.hud{font:800 14px var(--f-display);white-space:nowrap}
+.teams{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px}
+.team{display:flex;align-items:center;justify-content:space-between;gap:8px;border:3px solid var(--line);border-radius:14px;padding:8px 12px;background:var(--panel);font-weight:800;min-width:0}
+.team[aria-current="true"]{border-color:var(--tc)}
+.team .tn{display:flex;align-items:center;gap:8px;min-width:0;font-size:15px}
+.team .tn i{flex:none;width:14px;height:14px;border-radius:50%;background:var(--tc)}
+.team small{color:var(--muted);font-weight:700}
+.team b{font:800 26px var(--f-display)}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:20px;padding:20px}
+.prompt{margin:0 0 14px;font-weight:800;font-size:22px;text-wrap:balance}
+.stage{background:var(--stage);color:var(--stage-ink);border-radius:14px;padding:22px 16px;display:grid;justify-items:center;align-content:center;gap:12px;min-height:150px;text-align:center}
+.word{font:800 clamp(38px,11vw,60px)/1 var(--f-display);letter-spacing:-.01em}
+.word.sm{font-size:clamp(24px,7vw,34px)}
+.kk{color:var(--muted);font-weight:700}
+.stage .kk{color:#C9CCDD;font-size:20px}
+.note{margin:0;color:#C9CCDD;font-size:15px}
+.mini{border:2px solid rgba(255,255,255,.4);background:transparent;color:var(--stage-ink);border-radius:999px;padding:6px 16px;font-weight:800;font-size:15px}
+
+.opts{display:grid;gap:12px;margin-top:16px}
+.opts.sw4{grid-template-columns:repeat(2,minmax(0,1fr))}
+@media (min-width:560px){.opts.sw4{grid-template-columns:repeat(4,minmax(0,1fr))}}
+.opts.tx{grid-template-columns:repeat(2,minmax(0,1fr))}
+.opts.em{grid-template-columns:repeat(3,minmax(0,1fr))}
+.opt{position:relative;border:0;border-radius:14px;transition:transform .12s,opacity .2s}
+.opt:not(:disabled):hover{transform:translateY(-2px)}
+.opt.sw{aspect-ratio:1.5;max-width:100%;box-shadow:inset 0 0 0 2px var(--ring)}
+.opt.tx{display:flex;align-items:center;gap:10px;padding:16px 14px;min-height:64px;background:var(--bg);border:2px solid var(--line);font-weight:800;font-size:20px;text-align:left;text-transform:capitalize;min-width:0}
+.opt .n{display:inline-grid;place-items:center;flex:none;width:26px;height:26px;border-radius:50%;background:var(--line);font-size:14px}
+.opt .olab{min-width:0}
+.opt .olab small{display:block;font-size:.7em;font-weight:700;color:var(--muted)}
+.opt.tx.right .olab small{color:inherit}
+.opt.em{display:grid;justify-items:center;gap:4px;padding:12px 4px;background:var(--bg);border:2px solid var(--line);font-weight:800;font-size:clamp(13px,4vw,17px);text-transform:capitalize;min-width:0;overflow-wrap:break-word;text-align:center}
+.opt.em .e{font-size:clamp(40px,12vw,58px);line-height:1.1}
+.opt.dim{opacity:.35}
+.opt.tx.right,.opt.em.right{background:var(--good);border-color:var(--good);color:var(--on-good)}
+.opt.tx.right .n{background:rgba(255,255,255,.3)}
+.opt.tx.wrong,.opt.em.wrong{opacity:.4}
+.opt.tx.wrong{text-decoration:line-through}
+.opt.sw.right{box-shadow:inset 0 0 0 2px var(--ring),0 0 0 4px var(--panel),0 0 0 7px var(--good)}
+.opt.sw.wrong{opacity:.3}
+.opt.sw.right::after,.opt.sw.wrong::after{content:"\2713";position:absolute;inset:0;margin:auto;width:34px;height:34px;border-radius:50%;display:grid;place-items:center;background:var(--stage);color:#fff;font-weight:800}
+.opt.sw.wrong::after{content:"\2715"}
+
+.feedback{display:flex;align-items:center;justify-content:space-between;gap:12px 16px;flex-wrap:wrap;margin-top:14px;min-height:56px}
+.fb-text{margin:0;flex:1 1 220px;min-width:0;font-weight:700}
+.fb-text.ok{color:var(--good)}
+.fb-text.bad{color:var(--bad)}
+.fb-text.info{color:var(--muted)}
+.primary{border:0;background:var(--btn-bg);color:var(--btn-fg);border-radius:14px;padding:15px 26px;font-weight:800;font-size:18px}
+@keyframes shake{20%{transform:translateX(-6px)}40%{transform:translateX(6px)}60%{transform:translateX(-4px)}80%{transform:translateX(4px)}}
+.shake{animation:shake .35s}
+
+.mix{display:flex;align-items:flex-start;justify-content:center;gap:10px;flex-wrap:wrap}
+.mix b{font:800 26px var(--f-display);padding-top:14px}
+.mx{display:grid;justify-items:center;gap:4px;font-weight:800}
+.dot{display:block;width:62px;height:62px;border-radius:50%;box-shadow:inset 0 0 0 2px rgba(255,255,255,.35)}
+.dot.q{background:transparent;border:3px dashed rgba(255,255,255,.55);box-shadow:none;display:grid;place-items:center;font:800 24px var(--f-display)}
+.emoji{font-size:76px;line-height:1}
+.sent{margin:0;font-weight:800;font-size:24px}
+.sent .w{border-bottom:3px solid rgba(255,255,255,.5);padding-inline:.2em}
+.gap{display:inline-block;min-width:4.5em;border-bottom:3px solid rgba(255,255,255,.5);text-align:center}
+.gap.filled{border-bottom-color:transparent}
+.play{width:92px;height:92px;border-radius:50%;border:0;background:var(--stage-ink);color:var(--stage);display:grid;place-items:center}
+.said{min-height:1.5em;font-weight:800;font-size:20px}
+.big-sw{display:block;width:96px;height:96px;border-radius:50%;box-shadow:inset 0 0 0 3px var(--ring)}
+
+.spell{display:grid;justify-items:center;gap:18px;padding-top:6px}
+.slots,.tiles{display:flex;gap:8px;flex-wrap:wrap;justify-content:center}
+.slot{width:44px;height:56px;border-bottom:4px solid var(--ink);display:grid;place-items:center;font:800 32px var(--f-body);text-transform:uppercase}
+.slots.right .slot{border-color:var(--good);color:var(--good)}
+.slots.wrong .slot{border-color:var(--bad);color:var(--bad)}
+.tile{width:54px;height:60px;border:2px solid var(--line);background:var(--bg);border-radius:12px;font:800 26px var(--f-body);text-transform:uppercase}
+.tile.w{width:auto;min-width:54px;padding:0 16px;font-size:21px;text-transform:none}
+.tile:disabled{opacity:.25}
+.spell .row{display:flex;gap:10px;flex-wrap:wrap;justify-content:center}
+.peek{min-height:1.4em;font:800 26px var(--f-display);letter-spacing:.06em}
+.line{width:100%;min-height:68px;display:flex;flex-wrap:wrap;gap:8px;align-items:center;justify-content:center;padding:10px 4px;border-bottom:4px solid var(--ink)}
+.line .ph{color:var(--muted);font-weight:700}
+.chipw{padding:8px 14px;border-radius:12px;background:var(--bg);border:2px solid var(--line);font-weight:800;font-size:22px}
+.line.right .chipw{border-color:var(--good);color:var(--good)}
+.line.wrong .chipw{border-color:var(--bad);color:var(--bad)}
+
+.mem{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
+.mc{aspect-ratio:1;border:0;border-radius:14px;background:var(--stage);color:var(--stage-ink);display:grid;place-items:center;padding:4px;min-width:0;font:800 28px var(--f-display)}
+.mc.open{background:var(--bg);color:var(--ink);box-shadow:inset 0 0 0 2px var(--line)}
+.mc.done{background:var(--bg);color:var(--ink);box-shadow:inset 0 0 0 3px var(--good)}
+.mc .mw{font:800 clamp(13px,3.8vw,21px)/1.1 var(--f-body);text-transform:capitalize;overflow-wrap:anywhere;text-align:center}
+.mc .mw small{display:block;font-size:.72em;color:var(--muted);font-weight:700}
+.mc .swc{display:block;width:72%;aspect-ratio:1;border-radius:50%;box-shadow:inset 0 0 0 2px var(--ring)}
+
+.scene{display:block;width:100%;height:auto;border-radius:14px;border:2px solid var(--line);background:var(--bg)}
+.scene [data-part]{fill:var(--off);stroke:var(--ink);stroke-width:2.5;stroke-linejoin:round;cursor:pointer;transition:fill .3s}
+.scene .fx{fill:#7A4B2A;stroke:var(--ink);stroke-width:2.5}
+.legend{margin:10px 0 0;color:var(--muted);font-size:15px;text-align:center}
+.palette{display:grid;grid-template-columns:repeat(auto-fit,minmax(56px,1fr));gap:10px;margin-top:14px}
+.pal{width:100%;max-width:70px;aspect-ratio:1;justify-self:center;border:0;border-radius:50%;box-shadow:inset 0 0 0 2px var(--ring)}
+.pal[aria-pressed="true"]{box-shadow:inset 0 0 0 2px var(--ring),0 0 0 4px var(--panel),0 0 0 7px var(--ink)}
+
+.result{display:grid;gap:14px;justify-items:start}
+.result .rb{max-width:420px}
+.res-title{font:800 clamp(24px,6vw,34px)/1.1 var(--f-display);margin:0}
+.res-stars .stars{font-size:34px}
+.btns{display:flex;gap:10px;flex-wrap:wrap}
+.dict{list-style:none;margin:0;padding:0}
+.dict li{display:grid;grid-template-columns:36px minmax(0,1fr) minmax(0,1fr) auto;gap:14px;align-items:center;padding:10px 0;border-bottom:1px solid var(--line)}
+.dict .sw{width:32px;height:32px;border-radius:50%;box-shadow:inset 0 0 0 2px var(--ring)}
+.dict .en{font-weight:800;font-size:19px;text-transform:capitalize}
+.dict .mini{color:var(--ink);border-color:var(--line)}
+.dict-head{margin:0 0 6px;font:800 clamp(24px,6vw,32px)/1.1 var(--f-display)}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+
+<canvas id="confetti" hidden aria-hidden="true"></canvas>
+<div class="wrap" id="app">
+  <section id="screen-map">
+    <header class="top">
+      <span class="brand">Rainbow Rescue</span>
+      <div class="tools">
+        <button class="pill" id="btn-hints" data-act="hints" aria-pressed="false">Kazakh hints: off</button>
+        <button class="pill" id="btn-sound" data-act="sound" aria-pressed="true">Sound: on</button>
+        <button class="pill" data-act="dict">Dictionary</button>
+      </div>
+    </header>
+    <div class="hero">
+      <div id="map-rainbow"></div>
+      <div class="hero-text">
+        <h1>Rainbow Rescue</h1>
+        <p class="lead" id="map-lead"></p>
+      </div>
+    </div>
+
+    <h2 class="sec">How hard?</h2>
+    <div class="seg" role="group" aria-label="Difficulty">
+      <button data-act="diff" data-d="easy" aria-pressed="true">Easy</button>
+      <button data-act="diff" data-d="medium" aria-pressed="false">Medium</button>
+      <button data-act="diff" data-d="hard" aria-pressed="false">Hard</button>
+    </div>
+    <p class="note-line" id="diff-note"></p>
+
+    <h2 class="sec">Adventure</h2>
+    <ol class="levels" id="levels"></ol>
+
+    <h2 class="sec">Bonus games</h2>
+    <ul class="levels" id="bonus"></ul>
+
+    <details class="settings" id="settings">
+      <summary>Teacher settings</summary>
+      <div class="set-body">
+        <div class="set-row">
+          <button class="pill" id="btn-pat" data-act="pat" aria-pressed="false">Color patterns: off</button>
+          <button class="pill" id="btn-cls" data-act="cls" aria-pressed="false">Class mode: off</button>
+          <button class="ghost" id="btn-rt" data-act="resetteams" hidden>Reset team scores</button>
+        </div>
+        <div class="set-row">
+          <label for="pupil-name">Pupil name</label>
+          <input id="pupil-name" type="text" maxlength="30" placeholder="Name" autocomplete="off">
+          <button class="ghost" data-act="copyres">Copy result</button>
+        </div>
+        <textarea class="copybox" id="copybox" readonly hidden aria-label="Result to copy"></textarea>
+        <div class="set-row">
+          <button class="ghost" data-act="unlock">Unlock all levels</button>
+          <button class="ghost" id="btn-reset" data-act="reset">Reset progress</button>
+        </div>
+      </div>
+    </details>
+  </section>
+
+  <section id="screen-game" hidden>
+    <div class="gbar">
+      <button class="ghost" data-act="back">&larr; Map</button>
+      <div class="gtitle" id="g-name"></div>
+      <div class="pips" id="pips" aria-hidden="true"></div>
+    </div>
+    <div class="teams" id="teams" hidden></div>
+    <div class="card" id="qcard">
+      <p class="prompt" id="q-prompt"></p>
+      <div id="q-body"></div>
+    </div>
+    <div class="feedback" role="status" aria-live="polite">
+      <p class="fb-text info" id="fb-text"></p>
+      <button class="primary" id="next" data-act="next" hidden>Continue</button>
+    </div>
+  </section>
+
+  <section id="screen-result" hidden>
+    <div class="result" id="result"></div>
+  </section>
+
+  <section id="screen-dict" hidden>
+    <div class="gbar">
+      <button class="ghost" data-act="back">&larr; Map</button>
+    </div>
+    <h2 class="dict-head">Rainbow Dictionary</h2>
+    <p class="lead" style="margin-bottom:12px">Colors in English and Kazakh.</p>
+    <ul class="dict" id="dict"></ul>
+  </section>
+</div>
+
+<script>
+(function(){
+'use strict';
+
+var DARK = '#161926';
+var COLORS = {
+  red:    {hex:'#E4413A', tc:'#fff', kk:'қызыл'},
+  blue:   {hex:'#2D7BE0', tc:'#fff', kk:'көк'},
+  yellow: {hex:'#F6C515', tc:DARK,   kk:'сары'},
+  green:  {hex:'#38A95A', tc:DARK,   kk:'жасыл'},
+  orange: {hex:'#F08A24', tc:DARK,   kk:'қызғылт сары'},
+  pink:   {hex:'#F27BB0', tc:DARK,   kk:'қызғылт'},
+  black:  {hex:'#1B1C24', tc:'#fff', kk:'қара'},
+  white:  {hex:'#FFFFFF', tc:DARK,   kk:'ақ'},
+  purple: {hex:'#9B4FD0', tc:'#fff', kk:'күлгін'},
+  brown:  {hex:'#8A5530', tc:'#fff', kk:'қоңыр'},
+  grey:   {hex:'#8E93A3', tc:DARK,   kk:'сұр'},
+  'light blue':  {hex:'#7DC4F2', tc:DARK,   kk:'ашық көк'},
+  'dark blue':   {hex:'#1B3A8C', tc:'#fff', kk:'қою көк'},
+  'light green': {hex:'#8EDB8B', tc:DARK,   kk:'ашық жасыл'},
+  'dark green':  {hex:'#1E6B3A', tc:'#fff', kk:'қою жасыл'},
+  turquoise:     {hex:'#22C7B8', tc:DARK,   kk:'бирюза'},
+  gold:          {hex:'#C99700', tc:DARK,   kk:'алтын түсті'}
+};
+var KEYS = Object.keys(COLORS);
+var BANDS = [
+  {name:'red',    hex:'#E4413A', tc:'#fff'},
+  {name:'orange', hex:'#F08A24', tc:DARK},
+  {name:'yellow', hex:'#F6C515', tc:DARK},
+  {name:'green',  hex:'#38A95A', tc:DARK},
+  {name:'blue',   hex:'#2D7BE0', tc:'#fff'},
+  {name:'indigo', hex:'#5546D0', tc:'#fff'},
+  {name:'violet', hex:'#A150D1', tc:'#fff'}
+];
+
+var BASIC = ['red','blue','yellow','green','orange','pink','black','white'];
+var POOLS = {easy:BASIC, medium:BASIC.concat(['purple','brown','grey'])};
+POOLS.hard = POOLS.medium.concat(['light blue','dark blue','light green','dark green','turquoise','gold']);
+var DIFFS = {
+  easy:   {label:'Easy',   n:5, note:'8 basic colors. Words are shown to help you.', star:[1,4]},
+  medium: {label:'Medium', n:6, note:'11 colors. Fewer hints.',                       star:[1,3]},
+  hard:   {label:'Hard',   n:7, note:'11 colors and shades like light blue and dark green.', star:[2,5]}
+};
+
+var THINGS = [
+  ['🍎','apple','red'],['🍓','strawberry','red'],['🍅','tomato','red'],
+  ['🍌','banana','yellow'],['🍋','lemon','yellow'],['☀️','sun','yellow'],
+  ['🥕','carrot','orange'],['🍊','orange','orange'],
+  ['🐸','frog','green'],['🥒','cucumber','green'],['🌳','tree','green'],
+  ['🐳','whale','blue'],['🫐','blueberry','blue'],
+  ['🐷','pig','pink'],['🌸','flower','pink'],
+  ['🕷️','spider','black'],['🦇','bat','black'],
+  ['⛄','snowman','white'],['☁️','cloud','white'],
+  ['🍇','grapes','purple'],['🍆','eggplant','purple'],
+  ['🐻','bear','brown'],['🍫','chocolate','brown'],
+  ['🐘','elephant','grey'],['🐭','mouse','grey'],
+  ['🧊','ice','light blue'],['🌌','night sky','dark blue'],['🍏','apple','light green'],
+  ['🌲','pine tree','dark green'],['🏆','trophy','gold']
+];
+var MIXES = {
+  easy:   [['red','yellow','orange'],['blue','yellow','green'],['red','white','pink'],['red','blue','purple']],
+  extra:  [['black','white','grey'],['red','green','brown']],
+  shades: [['blue','white','light blue'],['blue','black','dark blue'],['green','white','light green'],['green','black','dark green']]
+};
+var INK = ['red','blue','green','yellow','orange','purple'];
+var SENT = {
+  easy: [
+    ['🍎','The apple is red.','Алма қызыл.'],['🍌','The banana is yellow.','Банан сары.'],
+    ['🐸','The frog is green.','Бақа жасыл.'],['🐷','The pig is pink.','Шошқа қызғылт.'],
+    ['🦇','The bat is black.','Жарқанат қара.'],['☁️','The cloud is white.','Бұлт ақ.']
+  ],
+  medium: [
+    ['🐘','I see a grey elephant.','Мен сұр піл көріп тұрмын.'],['🍇','I like purple grapes.','Маған күлгін жүзім ұнайды.'],
+    ['🐻','The brown bear is big.','Қоңыр аю үлкен.'],['💙','My favourite color is blue.','Менің сүйікті түсім – көк.'],
+    ['🧡','My favourite color is orange.','Менің сүйікті түсім – қызғылт сары.'],['🐳','The blue whale is big.','Көк кит үлкен.']
+  ],
+  hard: [
+    ['💚','My favourite color is dark green.','Менің сүйікті түсім – қою жасыл.'],['🧊','The ice is light blue.','Мұз ашық көк.'],
+    ['🏆','I have a gold trophy.','Менде алтын кубок бар.'],['🌌','The night sky is dark blue.','Түнгі аспан қою көк.'],
+    ['🍏','The apple is light green.','Алма ашық жасыл.'],['🐭','The little mouse is grey.','Кішкентай тышқан сұр.']
+  ]
+};
+var PARTS = ['sun','sky','grass','house','roof','door','tree'];
+var PRAISE = ['Great!','Super!','Well done!','Good job!','Awesome!'];
+var TEAMS = [{name:'Red team',hex:'#E4413A'},{name:'Blue team',hex:'#2D7BE0'}];
+
+var LEVELS = [
+  {name:'The Word Gate',       skill:'Read the word, tap the color', story:'The Grey Wizard locked the gate. Tap the right colors to open it.', make:qWordGate},
+  {name:'The Mixing Lab',      skill:'Mix the paints',               story:'Mix the paints in the lab. Find the magic crystal!',                  make:qMix},
+  {name:'The Market',          skill:'Things and their colors',      story:'The market is grey! Give each thing its color.',                      make:qMarket},
+  {name:'The Spelling Garden', skill:'Spell the color words',        story:'The flowers forgot their names. Spell the colors.',                  make:qSpell},
+  {name:'The Echo Cave',       skill:'Listen and choose',            story:'Listen to the echoes. Which color do you hear?',                      make:qEcho},
+  {name:'The Spy Forest',      skill:'I spy something...',           story:'Look at the forest. Can you find the color?',                         make:qSpy},
+  {name:'The Sentence Bridge', skill:'Make a sentence',              story:'Put the words in order to cross the bridge.',                         make:qBuild}
+];
+var BONUS = [
+  {k:'memory', name:'Memory Match', skill:'Match each word with its color', icon:'🃏'},
+  {k:'paint',  name:'Paint It!',    skill:'Paint the picture',              icon:'🎨'},
+  {k:'rush',   name:'Color Rush',   skill:'60 seconds. How many can you find?', icon:'⏱️'}
+];
+
+/* ---------- state ---------- */
+var STORE = 'rainbow-rescue-v2';
+var S = {done:{easy:{},medium:{},hard:{}}, bonus:{memory:{},paint:{},rush:{}}, hints:false, sound:true, pat:false, cls:false, diff:'easy', all:false, name:''};
+var T = {s:[0,0], turn:0};
+var G = null;
+var canSpeak = ('speechSynthesis' in window) && ('SpeechSynthesisUtterance' in window);
+
+function load(){
+  try {
+    var r = localStorage.getItem(STORE); if (!r) return;
+    var o = JSON.parse(r) || {};
+    ['easy','medium','hard'].forEach(function(d){ if (o.done && o.done[d]) S.done[d] = o.done[d]; });
+    ['memory','paint','rush'].forEach(function(k){ if (o.bonus && o.bonus[k]) S.bonus[k] = o.bonus[k]; });
+    ['hints','sound','pat','cls','all'].forEach(function(k){ if (typeof o[k] === 'boolean') S[k] = o[k]; });
+    if (DIFFS[o.diff]) S.diff = o.diff;
+    if (typeof o.name === 'string') S.name = o.name.slice(0, 30);
+  } catch(e){}
+}
+function save(){ try { localStorage.setItem(STORE, JSON.stringify(S)); } catch(e){} }
+
+/* ---------- helpers ---------- */
+function $(s){ return document.querySelector(s); }
+function cap(s){ return s.charAt(0).toUpperCase() + s.slice(1); }
+function shuffle(a){ a = a.slice(); for (var i = a.length - 1; i > 0; i--) { var j = Math.floor(Math.random() * (i + 1)); var t = a[i]; a[i] = a[j]; a[j] = t; } return a; }
+function pick(n, a){ return shuffle(a).slice(0, n); }
+function pool(){ return POOLS[S.diff]; }
+function D(){ return DIFFS[S.diff]; }
+function others(k, extra){ return pool().filter(function(x){ return x !== k && (!extra || extra.indexOf(x) < 0); }); }
+function starsFor(m){ var t = D().star; return m <= t[0] ? 3 : (m <= t[1] ? 2 : 1); }
+function starsHTML(n){
+  return '<span class="stars" role="img" aria-label="' + n + ' of 3 stars">' +
+    [1,2,3].map(function(i){ return '<span class="' + (i <= n ? 'on' : '') + '">★</span>'; }).join('') + '</span>';
+}
+function kkp(c){ return S.hints && COLORS[c] ? ' (' + COLORS[c].kk + ')' : ''; }
+function hintHTML(w){ return S.hints && COLORS[w] ? '<div class="kk">' + COLORS[w].kk + '</div>' : ''; }
+
+var PATS = [45, -45, 0, 90];
+function pat(k){
+  var i = KEYS.indexOf(k);
+  var t = COLORS[k].tc === '#fff' ? 'rgba(255,255,255,.6)' : 'rgba(0,0,0,.42)';
+  var s = [
+    'repeating-linear-gradient(45deg,' + t + ' 0 3px,transparent 3px 9px)',
+    'repeating-linear-gradient(-45deg,' + t + ' 0 3px,transparent 3px 9px)',
+    'repeating-linear-gradient(0deg,' + t + ' 0 3px,transparent 3px 9px)',
+    'repeating-linear-gradient(90deg,' + t + ' 0 3px,transparent 3px 9px)',
+    'radial-gradient(' + t + ' 2px,transparent 2.5px) 0 0/9px 9px',
+    'radial-gradient(' + t + ' 4px,transparent 4.5px) 0 0/16px 16px',
+    'repeating-linear-gradient(45deg,' + t + ' 0 2px,transparent 2px 7px),repeating-linear-gradient(-45deg,' + t + ' 0 2px,transparent 2px 7px)',
+    'repeating-linear-gradient(0deg,' + t + ' 0 2px,transparent 2px 7px),repeating-linear-gradient(90deg,' + t + ' 0 2px,transparent 2px 7px)',
+    'repeating-linear-gradient(45deg,' + t + ' 0 7px,transparent 7px 16px)',
+    'conic-gradient(' + t + ' 25%,transparent 0 50%,' + t + ' 0 75%,transparent 0) 0 0/16px 16px',
+    'repeating-linear-gradient(0deg,' + t + ' 0 6px,transparent 6px 14px)',
+    'repeating-linear-gradient(90deg,' + t + ' 0 6px,transparent 6px 14px)',
+    'repeating-linear-gradient(-45deg,' + t + ' 0 7px,transparent 7px 16px)',
+    'radial-gradient(' + t + ' 1.5px,transparent 2px) 0 0/6px 6px',
+    'radial-gradient(' + t + ' 6px,transparent 6.5px) 0 0/22px 22px',
+    'repeating-linear-gradient(30deg,' + t + ' 0 3px,transparent 3px 9px)',
+    'repeating-linear-gradient(120deg,' + t + ' 0 3px,transparent 3px 9px)'
+  ];
+  return s[i % s.length];
+}
+function sw(k){ return '--sw:' + COLORS[k].hex + ';--pat:' + pat(k); }
+
+/* ---------- sound, voice, confetti ---------- */
+var AC = null;
+function sfx(kind){
+  if (!S.sound) return;
+  try {
+    if (!AC) AC = new (window.AudioContext || window.webkitAudioContext)();
+    if (AC.state === 'suspended') AC.resume();
+    var seq = {
+      good: [[660,0,.12],[880,.11,.2]],
+      bad:  [[220,0,.12],[170,.1,.2]],
+      flip: [[520,0,.07]],
+      win:  [[523,0,.14],[659,.13,.14],[784,.26,.14],[1047,.39,.34]]
+    }[kind] || [];
+    var now = AC.currentTime;
+    seq.forEach(function(n){
+      var o = AC.createOscillator(), g = AC.createGain();
+      o.type = kind === 'bad' ? 'triangle' : 'sine';
+      o.frequency.value = n[0];
+      g.gain.setValueAtTime(0.0001, now + n[1]);
+      g.gain.exponentialRampToValueAtTime(0.18, now + n[1] + 0.02);
+      g.gain.exponentialRampToValueAtTime(0.0001, now + n[1] + n[2]);
+      o.connect(g); g.connect(AC.destination);
+      o.start(now + n[1]); o.stop(now + n[1] + n[2] + 0.05);
+    });
+  } catch(e){}
+}
+function say(t){
+  if (!canSpeak) return;
+  try { var u = new SpeechSynthesisUtterance(t); u.lang = 'en-US'; u.rate = 0.8; speechSynthesis.cancel(); speechSynthesis.speak(u); } catch(e){}
+}
+var cfToken = 0;
+function confetti(){
+  try {
+    if (window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    var my = ++cfToken;
+    var cv = $('#confetti'), ctx = cv.getContext('2d');
+    var W = cv.width = window.innerWidth, H = cv.height = window.innerHeight;
+    cv.hidden = false;
+    var ps = [];
+    for (var i = 0; i < 140; i++) {
+      ps.push({x:W / 2 + (Math.random() - .5) * W * .4, y:H * .35, vx:(Math.random() - .5) * 14, vy:-Math.random() * 13 - 4,
+        s:6 + Math.random() * 7, r:Math.random() * 6, vr:(Math.random() - .5) * .4, c:BANDS[i % BANDS.length].hex});
+    }
+    var t0 = null;
+    (function frame(ts){
+      if (t0 === null) t0 = ts;
+      var el = ts - t0;
+      ctx.clearRect(0, 0, W, H);
+      ps.forEach(function(p){
+        p.vy += .35; p.x += p.vx; p.y += p.vy; p.r += p.vr;
+        ctx.save(); ctx.translate(p.x, p.y); ctx.rotate(p.r);
+        ctx.globalAlpha = Math.max(0, 1 - el / 2400);
+        ctx.fillStyle = p.c; ctx.fillRect(-p.s / 2, -p.s / 3, p.s, p.s * .6); ctx.restore();
+      });
+      if (el < 2400 && my === cfToken) requestAnimationFrame(frame); else { ctx.clearRect(0, 0, W, H); if (my === cfToken) cv.hidden = true; }
+    })(performance.now());
+  } catch(e){}
+}
+function show(n){
+  cfToken++; $('#confetti').hidden = true;
+  ['map','game','result','dict'].forEach(function(k){ $('#screen-' + k).hidden = (k !== n); });
+  window.scrollTo(0, 0);
+}
+
+/* ---------- rainbow ---------- */
+function rainbow(done, anim){
+  var n = done.filter(Boolean).length;
+  var s = '<svg class="rb" viewBox="0 0 400 215" role="img" aria-label="' + n + ' of 7 rainbow colors restored">';
+  BANDS.forEach(function(b, i){
+    var r = 180 - i * 21;
+    var d = 'M ' + (200 - r) + ' 200 A ' + r + ' ' + r + ' 0 0 1 ' + (200 + r) + ' 200';
+    s += '<path d="' + d + '" class="arc off" pathLength="100"/>';
+    if (done[i]) s += '<path d="' + d + '" class="arc on' + (anim === i ? ' draw' : '') + '" pathLength="100" style="stroke:' + b.hex + '"/>';
+  });
+  s += '<text x="200" y="176" text-anchor="middle" class="rb-n">' + n + '/7</text>';
+  s += '<text x="200" y="196" text-anchor="middle" class="rb-l">colors back</text></svg>';
+  return s;
+}
+function doneArr(){ return BANDS.map(function(_, i){ return !!S.done[S.diff][i]; }); }
+
+/* ---------- map ---------- */
+function renderMap(){
+  var arr = doneArr();
+  var n = arr.filter(Boolean).length;
+  var total = 0; Object.keys(S.done[S.diff]).forEach(function(k){ total += S.done[S.diff][k]; });
+  $('#map-rainbow').innerHTML = rainbow(arr, -1);
+  $('#map-lead').textContent = n === 0
+    ? 'The Grey Wizard stole the colors of the rainbow. Win 7 games to bring them back!'
+    : (n === 7 ? 'You saved the rainbow! Stars: ' + total + ' of 21. Try a harder level or a bonus game.'
+               : n + ' of 7 colors are back. Keep going!');
+  $('#levels').innerHTML = LEVELS.map(function(L, i){
+    var st = S.done[S.diff][i] || 0;
+    var open = S.all || i === 0 || !!S.done[S.diff][i - 1];
+    var state = st ? 'done' : (open ? 'open' : 'locked');
+    var meta = st ? starsHTML(st) : (open ? '<span>Play</span>' : '<span class="lock">Locked</span>');
+    var b = BANDS[i];
+    return '<li><button class="level" data-act="level" data-i="' + i + '" data-state="' + state + '"' + (open ? '' : ' disabled') +
+      ' style="--c:' + b.hex + ';--tc:' + b.tc + '"><span class="chip">' + (i + 1) + '</span>' +
+      '<span><span class="lv-name">' + L.name + '</span><span class="lv-skill">' + L.skill + '</span></span>' +
+      '<span class="lv-meta">' + meta + '</span></button></li>';
+  }).join('');
+  $('#bonus').innerHTML = BONUS.map(function(B){
+    var v = S.bonus[B.k][S.diff] || 0;
+    var meta = !v ? '<span>Play</span>' : (B.k === 'rush' ? '<span>Best: ' + v + '</span>' : starsHTML(v));
+    return '<li><button class="level" data-act="bonus" data-k="' + B.k + '" data-state="open" style="--c:var(--ink)">' +
+      '<span class="chip ic" aria-hidden="true">' + B.icon + '</span>' +
+      '<span><span class="lv-name">' + B.name + '</span><span class="lv-skill">' + B.skill + '</span></span>' +
+      '<span class="lv-meta">' + meta + '</span></button></li>';
+  }).join('');
+  document.querySelectorAll('[data-act="diff"]').forEach(function(b){ b.setAttribute('aria-pressed', b.dataset.d === S.diff ? 'true' : 'false'); });
+  $('#diff-note').textContent = D().note;
+  var set = function(id, on, label){ var b = $(id); b.setAttribute('aria-pressed', on ? 'true' : 'false'); b.textContent = label + ': ' + (on ? 'on' : 'off'); };
+  set('#btn-hints', S.hints, 'Kazakh hints');
+  set('#btn-sound', S.sound, 'Sound');
+  set('#btn-pat', S.pat, 'Color patterns');
+  set('#btn-cls', S.cls, 'Class mode');
+  $('#btn-rt').hidden = !S.cls;
+  document.body.classList.toggle('pat-on', S.pat);
+  document.body.classList.toggle('cls', S.cls);
+  $('#pupil-name').value = S.name;
+}
+
+/* ---------- dictionary ---------- */
+function renderDict(){
+  $('#dict').innerHTML = KEYS.map(function(k){
+    return '<li><i class="sw swp" style="' + sw(k) + '"></i><span class="en">' + k + '</span><span class="kk">' + COLORS[k].kk + '</span>' +
+      (canSpeak ? '<button class="mini" data-say="' + k + '">Listen</button>' : '<span></span>') + '</li>';
+  }).join('');
+}
+
+/* ---------- question builders ---------- */
+function swatchOpts(keys){ return keys.map(function(k){ return {key:k}; }); }
+function textOpts(keys){ return keys.map(function(k){ return {key:k, label:k, kk:COLORS[k] ? COLORS[k].kk : ''}; }); }
+function listenBtn(t){ return canSpeak ? '<button class="mini" data-say="' + t + '">Listen</button>' : ''; }
+
+function w2c(w){
+  return {
+    kind:'swatch', prompt:'Tap the color:',
+    stage:'<div class="word">' + w + '</div>' + hintHTML(w) + listenBtn(w),
+    options:swatchOpts(shuffle([w].concat(pick(3, others(w))))),
+    answer:w, ok:'This is ' + w + kkp(w) + '.', autoplay:(S.diff === 'easy' ? w : null)
+  };
+}
+function c2w(w){
+  return {
+    kind:'text', prompt:'What color is it?',
+    stage:'<i class="big-sw swp" style="' + sw(w) + '"></i>',
+    options:textOpts(shuffle([w].concat(pick(3, others(w))))),
+    answer:w, ok:'This is ' + w + kkp(w) + '.'
+  };
+}
+function qWordGate(){
+  return pick(D().n, pool()).map(function(w, i){ return (S.diff !== 'easy' && i % 2 === 1) ? c2w(w) : w2c(w); });
+}
+
+function mixDot(k){ return '<span class="mx"><i class="dot swp" style="' + sw(k) + '"></i><span>' + k + '</span></span>'; }
+function qMix(){
+  var r = MIXES.easy;
+  if (S.diff !== 'easy') r = r.concat(MIXES.extra);
+  if (S.diff === 'hard') r = r.concat(MIXES.shades);
+  return pick(D().n, r).map(function(m){
+    var a = m[0], b = m[1], c = m[2];
+    return {
+      kind:'text', prompt:'Mix the two paints. What color is it?',
+      stage:'<div class="mix">' + mixDot(a) + '<b>+</b>' + mixDot(b) + '<b>=</b><span class="mx"><i class="dot q" id="mix-r">?</i></span></div>',
+      options:textOpts(shuffle([c].concat(pick(3, others(c, [a, b]))))),
+      answer:c, ok:a + ' + ' + b + ' = ' + c + kkp(c) + '.',
+      reveal:function(){ var r2 = $('#mix-r'); if (!r2) return; r2.className = 'dot swp'; r2.style.cssText = sw(c); r2.textContent = ''; }
+    };
+  });
+}
+
+function qMarket(){
+  var p = pool();
+  var items = THINGS.filter(function(t){ return p.indexOf(t[2]) >= 0; });
+  return pick(D().n, items).map(function(t){
+    var e = t[0], n = t[1], c = t[2];
+    return {
+      kind:'text', prompt:'What color is it?',
+      stage:'<div class="emoji" role="img" aria-label="' + n + '">' + e + '</div><p class="sent">The ' + n + ' is <span class="gap" id="gap">&nbsp;</span>.</p>',
+      options:textOpts(shuffle([c].concat(pick(3, others(c))))),
+      answer:c, ok:'The ' + n + ' is ' + c + kkp(c) + '.',
+      reveal:function(){ var g = $('#gap'); if (!g) return; g.textContent = c; g.classList.add('filled'); }
+    };
+  });
+}
+
+function qSpell(){
+  var words = pool().filter(function(k){ return k.indexOf(' ') < 0; });
+  var extra = 'abcdefghijklmnopqrstuvwxyz';
+  return pick(D().n, words).map(function(w){
+    var t = w.split('');
+    if (S.diff === 'hard') { for (var e = 0; e < 2; e++) t.push(extra.charAt(Math.floor(Math.random() * 26))); }
+    var s = t;
+    for (var k = 0; k < 20; k++) { s = shuffle(t); if (s.join('').slice(0, w.length) !== w) break; }
+    return {
+      kind:'spell', prompt:(S.diff === 'easy' ? 'Look and spell the color.' : 'Spell the color.'),
+      word:w, tokens:s, need:w.length, joiner:'', answer:w, ok:cap(w) + kkp(w) + '.',
+      mode:(S.diff === 'easy' ? 'show' : (S.diff === 'medium' ? 'peek' : 'none'))
+    };
+  });
+}
+
+var ICON = '<svg viewBox="0 0 24 24" width="40" height="40" fill="currentColor" aria-hidden="true"><path d="M4 9v6h4l5 4V5L8 9H4zm12.5 3a4.5 4.5 0 0 0-2.5-4v8a4.5 4.5 0 0 0 2.5-4zM14 3.2v2.1a7 7 0 0 1 0 13.4v2.1a9 9 0 0 0 0-17.6z"/></svg>';
+function qEcho(){
+  var p = pool();
+  var items = THINGS.filter(function(t){ return p.indexOf(t[2]) >= 0 && t[1] !== 'orange'; });
+  return pick(D().n, items).map(function(t){
+    var c = t[2], phrase = 'The ' + c + ' ' + t[1];
+    return {
+      kind:'swatch', prompt:'Listen. Which color do you hear?',
+      stage: canSpeak
+        ? '<button class="play" data-say="' + phrase + '" aria-label="Play sound">' + ICON + '</button><button class="mini" data-act="showtext" data-text="' + phrase + '">Show words</button><div class="said" id="said"></div>'
+        : '<div class="word sm">' + phrase + '</div><p class="note">This browser cannot play sound, so read the words.</p>',
+      options:swatchOpts(shuffle([c].concat(pick(3, others(c))))),
+      answer:c, ok:'The ' + t[1] + ' is ' + c + kkp(c) + '.', autoplay:phrase
+    };
+  });
+}
+
+function qSpy(){
+  var p = pool().filter(function(c){ return THINGS.some(function(t){ return t[2] === c; }); });
+  var qs = [];
+  var count = S.diff === 'hard' ? D().n - 2 : D().n;
+  for (var i = 0; i < count; i++) {
+    var cols = pick(6, p);
+    var items = cols.map(function(c){ var it = pick(1, THINGS.filter(function(t){ return t[2] === c; }))[0]; return {key:c, e:it[0], n:it[1]}; });
+    var target = items[Math.floor(Math.random() * items.length)];
+    qs.push({
+      kind:'scene', prompt:'I spy something...',
+      stage:'<p class="sent">I spy something <span class="w">' + target.key + '</span>.</p>' + hintHTML(target.key) + listenBtn('I spy something ' + target.key),
+      options:items, answer:target.key, ok:'The ' + target.n + ' is ' + target.key + kkp(target.key) + '.'
+    });
+  }
+  if (S.diff === 'hard') qs = qs.concat(qInk(2));
+  return qs;
+}
+function qInk(n){
+  return pick(n, INK).map(function(w){
+    var ink = pick(1, INK.filter(function(k){ return k !== w; }))[0];
+    var rest = pick(2, INK.filter(function(k){ return k !== w && k !== ink; }));
+    return {
+      kind:'text', prompt:'What color is the INK? Ignore the word!',
+      stage:'<div class="word" style="color:' + COLORS[ink].hex + '">' + w + '</div>',
+      options:textOpts(shuffle([ink, w].concat(rest))),
+      answer:ink, ok:'The ink is ' + ink + kkp(ink) + '. The word says "' + w + '".'
+    };
+  });
+}
+
+function qBuild(){
+  return pick(D().n, SENT[S.diff]).map(function(s){
+    var tk = s[1].split(' '), sh = tk;
+    for (var k = 0; k < 20; k++) { sh = shuffle(tk); if (sh.join(' ') !== s[1]) break; }
+    return {
+      kind:'build', prompt:'Put the words in order.', emoji:s[0], kkText:s[2],
+      tokens:sh, need:tk.length, joiner:' ', answer:s[1], ok:s[1]
+    };
+  });
+}
+
+function qPaint(){
+  var p = pool();
+  return pick(Math.min(D().n, PARTS.length), PARTS).map(function(part){
+    var c = pick(1, p)[0];
+    return {kind:'paint', part:part, color:c, prompt:'Paint the ' + part + ' ' + c + '.' + kkp(c), ok:'The ' + part + ' is ' + c + '.'};
+  });
+}
+
+/* ---------- rendering a question ---------- */
+function optHTML(q){
+  return function(o, i){
+    if (q.kind === 'swatch') return '<button class="opt sw swp" data-act="opt" data-key="' + o.key + '" style="' + sw(o.key) + '" aria-label="Color ' + (i + 1) + '"></button>';
+    if (q.kind === 'scene') return '<button class="opt em" data-act="opt" data-key="' + o.key + '" aria-label="' + o.n + '"><span class="e" aria-hidden="true">' + o.e + '</span><span>' + o.n + '</span></button>';
+    return '<button class="opt tx" data-act="opt" data-key="' + o.key + '"><span class="n">' + (i + 1) + '</span><span class="olab">' + o.label + (S.hints && o.kk ? '<small>' + o.kk + '</small>' : '') + '</span></button>';
+  };
+}
+function qHTML(q){
+  var cls = q.kind === 'swatch' ? 'sw4' : (q.kind === 'scene' ? 'em' : 'tx');
+  return '<div class="stage">' + q.stage + '</div><div class="opts ' + cls + '">' + q.options.map(optHTML(q)).join('') + '</div>';
+}
+function spellHTML(q){
+  var top = '<i class="big-sw swp" style="' + sw(q.word) + '"></i>';
+  if (q.mode === 'show') top += '<div class="word sm">' + q.word + '</div>' + hintHTML(q.word);
+  else if (q.mode === 'peek') top += '<div class="peek" id="peek" aria-live="polite"></div>' + hintHTML(q.word) + '<button class="ghost" data-act="peek">Peek at the word</button>';
+  else top += hintHTML(q.word);
+  return '<div class="spell">' + top +
+    '<div class="slots" id="slots">' + q.word.split('').map(function(){ return '<span class="slot"></span>'; }).join('') + '</div>' +
+    '<div class="tiles">' + q.tokens.map(function(c, i){ return '<button class="tile" data-act="tile" data-i="' + i + '">' + c + '</button>'; }).join('') + '</div>' +
+    '<div class="row"><button class="ghost" data-act="undo">Delete</button><button class="ghost" data-act="clear">Clear</button></div></div>';
+}
+function buildHTML(q){
+  return '<div class="spell"><div class="emoji" role="img" aria-label="picture">' + q.emoji + '</div>' +
+    (S.hints ? '<div class="kk">' + q.kkText + '</div>' : '') +
+    '<div class="line" id="slots"><span class="ph">Tap the words</span></div>' +
+    '<div class="tiles">' + q.tokens.map(function(c, i){ return '<button class="tile w" data-act="tile" data-i="' + i + '">' + c + '</button>'; }).join('') + '</div>' +
+    '<div class="row"><button class="ghost" data-act="undo">Delete</button><button class="ghost" data-act="clear">Clear</button></div></div>';
+}
+function paintHTML(){
+  var P = G.painted;
+  function f(part){ return P[part] ? ' style="fill:' + COLORS[P[part]].hex + '"' : ''; }
+  function a(part, label){ return 'data-part="' + part + '" tabindex="0" role="button" aria-label="' + label + '"' + f(part); }
+  var svg = '<svg class="scene" viewBox="0 0 320 210" aria-label="A picture of a house">' +
+    '<rect ' + a('sky', 'sky') + ' x="2" y="2" width="316" height="206" rx="12"/>' +
+    '<circle ' + a('sun', 'sun') + ' cx="272" cy="36" r="22"/>' +
+    '<rect ' + a('grass', 'grass') + ' x="2" y="150" width="316" height="58" rx="10"/>' +
+    '<rect ' + a('house', 'house') + ' x="70" y="92" width="112" height="80"/>' +
+    '<polygon ' + a('roof', 'roof') + ' points="54,96 126,44 198,96"/>' +
+    '<rect ' + a('door', 'door') + ' x="108" y="128" width="34" height="44"/>' +
+    '<rect class="fx" x="233" y="118" width="14" height="44"/>' +
+    '<circle ' + a('tree', 'tree') + ' cx="240" cy="100" r="30"/></svg>';
+  var pal = '<div class="palette">' + pool().map(function(k, i){
+    return '<button class="pal swp" data-act="paint" data-key="' + k + '" aria-pressed="' + (G.paint === k) + '" aria-label="Paint ' + (i + 1) + '" style="' + sw(k) + '"></button>';
+  }).join('') + '</div>';
+  return svg + '<p class="legend">sun &middot; sky &middot; grass &middot; house &middot; roof &middot; door &middot; tree</p>' + pal;
+}
+
+function setFb(text, cls){ var p = $('#fb-text'); p.className = 'fb-text ' + cls; p.textContent = text; }
+function shake(){ var c = $('#qcard'); c.classList.remove('shake'); void c.offsetWidth; c.classList.add('shake'); }
+function drawPips(){
+  if (!G.qs) return;
+  $('#pips').innerHTML = G.qs.map(function(_, i){
+    var done = i < G.qi || (i === G.qi && G.answered);
+    return '<span class="pip' + (done ? ' done' : '') + (i === G.qi ? ' cur' : '') + '" style="--c:' + G.hex + '"></span>';
+  }).join('');
+}
+function renderTeams(){
+  var el = $('#teams');
+  var on = S.cls && G && G.mode === 'level';
+  el.hidden = !on;
+  if (!on) return;
+  el.innerHTML = TEAMS.map(function(t, i){
+    return '<div class="team" style="--tc:' + t.hex + '" aria-current="' + (T.turn === i) + '"><span class="tn"><i></i>' + t.name + (T.turn === i ? ' <small>turn</small>' : '') + '</span><b>' + T.s[i] + '</b></div>';
+  }).join('');
+}
+
+/* ---------- game flow ---------- */
+function stopTimer(){ if (G && G.timer) { clearInterval(G.timer); G.timer = null; } }
+function startGame(mode, arg){
+  stopTimer();
+  G = {mode:mode, qi:0, mistakes:0, qm:0, answered:false, picked:[], lock:false, painted:{}, paint:null, hex:'#2D7BE0', over:false};
+  if (mode === 'level') {
+    G.li = arg; G.qs = LEVELS[arg].make(); G.hex = BANDS[arg].hex;
+    $('#g-name').textContent = (arg + 1) + '. ' + LEVELS[arg].name;
+  } else if (mode === 'paint') {
+    G.qs = qPaint(); G.hex = '#F27BB0'; $('#g-name').textContent = 'Paint It!';
+  } else if (mode === 'memory') {
+    $('#g-name').textContent = 'Memory Match';
+  } else if (mode === 'rush') {
+    $('#g-name').textContent = 'Color Rush';
+  }
+  show('game');
+  if (mode === 'memory') startMemory();
+  else if (mode === 'rush') startRush();
+  else { $('#pips').innerHTML = ''; renderQ(); }
+  renderTeams();
+}
+function renderQ(){
+  var q = G.qs[G.qi];
+  G.answered = false; G.picked = []; G.lock = false; G.qm = 0; G.paint = null;
+  $('#q-prompt').textContent = q.prompt;
+  var html;
+  if (q.kind === 'spell') html = spellHTML(q);
+  else if (q.kind === 'build') html = buildHTML(q);
+  else if (q.kind === 'paint') html = paintHTML();
+  else html = qHTML(q);
+  $('#q-body').innerHTML = html;
+  $('#next').hidden = true;
+  var first = G.qi === 0;
+  setFb(first && G.mode === 'level' ? LEVELS[G.li].story : (first && G.mode === 'paint' ? 'Tap a paint, then tap the picture.' : ''), 'info');
+  drawPips();
+  if (q.autoplay && canSpeak) setTimeout(function(){ say(q.autoplay); }, 350);
+}
+function good(q, btn){
+  G.answered = true; G.lock = false;
+  if (btn) btn.classList.add('right');
+  document.querySelectorAll('#q-body .opt, #q-body .tile, #q-body .ghost').forEach(function(b){
+    b.disabled = true;
+    if (b !== btn && b.classList.contains('opt')) b.classList.add('dim');
+  });
+  if (q.reveal) q.reveal();
+  sfx('good');
+  var text = PRAISE[Math.floor(Math.random() * PRAISE.length)] + ' ' + q.ok;
+  if (S.cls && G.mode === 'level' && G.qm === 0) { T.s[T.turn]++; text += ' +1 point for the ' + TEAMS[T.turn].name + '.'; renderTeams(); }
+  setFb(text, 'ok');
+  var last = G.qi === G.qs.length - 1;
+  var nx = $('#next'); nx.textContent = last ? 'Finish' : 'Continue'; nx.hidden = false;
+  try { nx.focus({preventScroll:true}); } catch(e){}
+  drawPips();
+}
+function bad(btn){
+  G.mistakes++; G.qm++;
+  if (btn) { btn.classList.add('wrong'); btn.disabled = true; }
+  shake(); sfx('bad');
+  setFb('Not yet. Try again!', 'bad');
+}
+function onOpt(btn){
+  if (!G) return;
+  if (G.mode === 'rush') {
+    if (G.over || G.lock) return;
+    var ok = btn.dataset.key === G.q.answer;
+    if (ok) { G.score++; sfx('good'); } else { G.misses++; sfx('bad'); }
+    rushHud(); renderRush(ok ? 'Yes!' : 'Oops!', ok ? 'ok' : 'bad');
+    return;
+  }
+  if (G.answered) return;
+  var q = G.qs[G.qi];
+  if (btn.dataset.key === q.answer) good(q, btn); else bad(btn);
+}
+function paintPicked(){
+  var q = G.qs[G.qi];
+  var box = $('#slots');
+  if (q.kind === 'spell') {
+    box.querySelectorAll('.slot').forEach(function(s, i){ s.textContent = G.picked[i] !== undefined ? q.tokens[G.picked[i]] : ''; });
+  } else {
+    box.innerHTML = G.picked.length
+      ? G.picked.map(function(k){ return '<span class="chipw">' + q.tokens[k] + '</span>'; }).join('')
+      : '<span class="ph">Tap the words</span>';
+  }
+  document.querySelectorAll('.tile').forEach(function(t){ t.disabled = G.answered || G.picked.indexOf(+t.dataset.i) >= 0; });
+}
+function onTile(btn){
+  if (G.answered || G.lock) return;
+  var q = G.qs[G.qi], i = +btn.dataset.i;
+  if (G.picked.indexOf(i) >= 0 || G.picked.length >= q.need) return;
+  G.picked.push(i); sfx('flip');
+  paintPicked();
+  if (G.picked.length === q.need) {
+    var w = G.picked.map(function(k){ return q.tokens[k]; }).join(q.joiner);
+    var box = $('#slots');
+    if (w === q.answer) { box.classList.add('right'); good(q, null); }
+    else {
+      G.lock = true; box.classList.add('wrong'); bad(null);
+      setTimeout(function(){ box.classList.remove('wrong'); G.picked = []; G.lock = false; paintPicked(); }, 750);
+    }
+  }
+}
+function onPart(el){
+  if (!G || G.mode !== 'paint' || G.answered) return;
+  var q = G.qs[G.qi];
+  if (!G.paint) { setFb('First tap a paint, then tap the picture.', 'info'); return; }
+  var part = el.getAttribute('data-part');
+  if (part === q.part && G.paint === q.color) {
+    G.painted[part] = q.color;
+    el.style.fill = COLORS[q.color].hex;
+    good(q, null);
+  } else bad(null);
+}
+function nextQ(){
+  if (G.mode === 'level' && S.cls) { T.turn = 1 - T.turn; }
+  G.qi++;
+  if (G.qi >= G.qs.length) finishGame(); else { renderQ(); renderTeams(); }
+}
+
+/* ---------- results ---------- */
+function showResult(o){
+  $('#result').innerHTML = (o.top || '') + '<h2 class="res-title">' + o.title + '</h2>' +
+    (o.stars ? '<div class="res-stars">' + starsHTML(o.stars) + '</div>' : '') +
+    '<p class="lead">' + o.line + '</p>' + (o.extra || '') + '<div class="btns">' + o.btns + '</div>';
+  show('result'); sfx('win'); confetti();
+}
+function scoreLine(){
+  if (!(S.cls && G && G.mode === 'level')) return '';
+  var a = T.s[0], b = T.s[1];
+  var lead = a === b ? 'It is a tie.' : (a > b ? TEAMS[0].name + ' is ahead.' : TEAMS[1].name + ' is ahead.');
+  return '<p class="lead"><b>' + TEAMS[0].name + ' ' + a + ' &ndash; ' + b + ' ' + TEAMS[1].name + '.</b> ' + lead + '</p>';
+}
+function finishGame(){
+  if (G.mode === 'level') {
+    var stars = starsFor(G.mistakes);
+    var d = S.done[S.diff]; d[G.li] = Math.max(d[G.li] || 0, stars); save();
+    var arr = doneArr(), all = arr.every(Boolean);
+    var line = G.mistakes === 0 ? 'No mistakes. Perfect!' : G.mistakes + ' wrong ' + (G.mistakes === 1 ? 'tap' : 'taps') + '.' + (stars < 3 ? ' Play again for more stars.' : '');
+    var btns = G.li < LEVELS.length - 1
+      ? '<button class="primary" data-act="nextlevel">Next: ' + LEVELS[G.li + 1].name + '</button>'
+      : '<button class="primary" data-act="dict">Dictionary</button>';
+    btns += '<button class="ghost" data-act="again">Play again</button><button class="ghost" data-act="back">Map</button>';
+    showResult({top:rainbow(arr, G.li), title:(all ? 'The whole rainbow is back!' : 'The ' + BANDS[G.li].name + ' band is back!'), stars:stars, line:line, extra:scoreLine(), btns:btns});
+  } else if (G.mode === 'paint') {
+    var st = starsFor(G.mistakes);
+    S.bonus.paint[S.diff] = Math.max(S.bonus.paint[S.diff] || 0, st); save();
+    showResult({title:'What a nice picture!', stars:st, line:G.mistakes === 0 ? 'No mistakes. Perfect!' : G.mistakes + ' wrong taps.',
+      extra:'<div style="width:100%;max-width:420px">' + paintHTML().split('<p class="legend">')[0] + '</div>',
+      btns:'<button class="primary" data-act="again">Play again</button><button class="ghost" data-act="back">Map</button>'});
+  }
+}
+
+/* ---------- memory match ---------- */
+function startMemory(){
+  var n = S.diff === 'easy' ? 4 : (S.diff === 'medium' ? 6 : 8);
+  var keys = pick(n, pool()), cards = [];
+  keys.forEach(function(k){ cards.push({key:k, type:'w'}); cards.push({key:k, type:'c'}); });
+  cards = shuffle(cards).map(function(c){ c.open = false; c.done = false; return c; });
+  G.mem = {cards:cards, first:null, moves:0, left:n, lock:false, pairs:n};
+  $('#q-prompt').textContent = 'Find the pairs: match each word with its color.';
+  $('#q-body').innerHTML = '<div class="mem" id="mem">' + cards.map(function(_, i){
+    return '<button class="mc" data-act="flip" data-i="' + i + '" aria-label="Card ' + (i + 1) + ', face down"><span aria-hidden="true">?</span></button>';
+  }).join('') + '</div>';
+  $('#next').hidden = true;
+  setFb('Tap two cards. Do they match?', 'info');
+  memHud();
+}
+function memHud(){ $('#pips').innerHTML = '<span class="hud">Moves: ' + G.mem.moves + '</span>'; }
+function drawCard(i){
+  var b = document.querySelector('#mem [data-i="' + i + '"]'); if (!b) return;
+  var c = G.mem.cards[i];
+  b.className = 'mc' + (c.open ? ' open' : '') + (c.done ? ' done' : '');
+  if (c.open || c.done) {
+    b.innerHTML = c.type === 'w'
+      ? '<span class="mw">' + c.key + (S.hints ? '<small>' + COLORS[c.key].kk + '</small>' : '') + '</span>'
+      : '<i class="swc swp" style="' + sw(c.key) + '"></i>';
+    b.setAttribute('aria-label', 'Card ' + (i + 1) + ': ' + (c.type === 'w' ? c.key : 'a ' + c.key + ' color'));
+  } else {
+    b.innerHTML = '<span aria-hidden="true">?</span>';
+    b.setAttribute('aria-label', 'Card ' + (i + 1) + ', face down');
+  }
+}
+function flip(i){
+  var m = G && G.mem; if (!m || m.lock) return;
+  var c = m.cards[i]; if (c.open || c.done) return;
+  c.open = true; drawCard(i); sfx('flip');
+  if (m.first === null) { m.first = i; return; }
+  var fi = m.first, a = m.cards[fi];
+  m.first = null; m.moves++; memHud();
+  if (a.key === c.key) {
+    a.done = c.done = true; m.left--; drawCard(fi); drawCard(i); sfx('good');
+    setFb('A match! ' + cap(c.key) + kkp(c.key) + '.', 'ok');
+    if (m.left === 0) setTimeout(function(){ if (G && G.mem === m) finishMemory(); }, 600);
+  } else {
+    m.lock = true; sfx('bad'); setFb('Not a pair. Try again!', 'bad');
+    setTimeout(function(){ a.open = false; c.open = false; drawCard(fi); drawCard(i); m.lock = false; }, 900);
+  }
+}
+function finishMemory(){
+  var m = G.mem, stars = m.moves <= m.pairs + 2 ? 3 : (m.moves <= m.pairs * 2 ? 2 : 1);
+  S.bonus.memory[S.diff] = Math.max(S.bonus.memory[S.diff] || 0, stars); save();
+  showResult({title:'All pairs found!', stars:stars, line:'You needed ' + m.moves + ' moves. The best is ' + m.pairs + '.',
+    btns:'<button class="primary" data-act="again">Play again</button><button class="ghost" data-act="back">Map</button>'});
+}
+
+/* ---------- color rush ---------- */
+function startRush(){
+  G.score = 0; G.misses = 0; G.left = 60;
+  rushHud();
+  renderRush('Find the colors fast!', 'info');
+  G.timer = setInterval(function(){
+    G.left--; rushHud();
+    if (G.left <= 0) endRush();
+  }, 1000);
+}
+function rushHud(){ $('#pips').innerHTML = '<span class="hud">' + Math.max(G.left, 0) + ' s &middot; Score ' + G.score + '</span>'; }
+function renderRush(msg, cls){
+  var w = pick(1, pool())[0];
+  var q = (S.diff !== 'easy' && Math.random() < 0.4) ? c2w(w) : w2c(w);
+  q.autoplay = null; G.q = q;
+  $('#q-prompt').textContent = q.prompt;
+  $('#q-body').innerHTML = qHTML(q);
+  $('#next').hidden = true;
+  setFb(msg || '', cls || 'info');
+}
+function endRush(){
+  stopTimer(); G.over = true;
+  var best = S.bonus.rush[S.diff] || 0, nb = G.score > best;
+  if (nb) { S.bonus.rush[S.diff] = G.score; save(); }
+  showResult({title:'Time is up!', line:'You found ' + G.score + ' ' + (G.score === 1 ? 'color' : 'colors') + '. ' + (nb ? 'New best score!' : 'Best score: ' + best + '.'),
+    btns:'<button class="primary" data-act="again">Play again</button><button class="ghost" data-act="back">Map</button>'});
+}
+
+/* ---------- teacher tools ---------- */
+function summary(){
+  var out = [(S.name || 'Pupil') + ' - Rainbow Rescue'];
+  ['easy','medium','hard'].forEach(function(d){
+    var o = S.done[d], n = 0, st = 0;
+    Object.keys(o).forEach(function(k){ if (o[k]) { n++; st += o[k]; } });
+    if (n) out.push(DIFFS[d].label + ': ' + n + '/7 colors, ' + st + ' stars');
+  });
+  var b = [];
+  [['memory','Memory Match',' stars'],['paint','Paint It',' stars'],['rush','Color Rush',' points']].forEach(function(x){
+    ['easy','medium','hard'].forEach(function(d){ var v = S.bonus[x[0]][d]; if (v) b.push(x[1] + ' (' + DIFFS[d].label + '): ' + v + x[2]); });
+  });
+  if (b.length) out.push('Bonus: ' + b.join('; '));
+  if (out.length === 1) out.push('No games finished yet.');
+  return out.join('\n');
+}
+function copyResult(){
+  var box = $('#copybox'), t = summary();
+  box.hidden = false; box.value = t; box.focus(); box.select();
+  try { navigator.clipboard.writeText(t).catch(function(){}); } catch(e){}
+}
+
+/* ---------- actions ---------- */
+var resetArmed = false;
+var acts = {
+  level:function(b){ startGame('level', +b.dataset.i); },
+  bonus:function(b){ startGame(b.dataset.k); },
+  back:function(){ stopTimer(); G = null; renderMap(); show('map'); },
+  diff:function(b){ S.diff = b.dataset.d; save(); renderMap(); },
+  opt:onOpt,
+  next:nextQ,
+  tile:onTile,
+  undo:function(){ if (G.answered || G.lock) return; G.picked.pop(); paintPicked(); },
+  clear:function(){ if (G.answered || G.lock) return; G.picked = []; paintPicked(); },
+  peek:function(){ var q = G.qs[G.qi], p = $('#peek'); if (!p) return; p.textContent = q.word; setTimeout(function(){ p.textContent = ''; }, 2000); },
+  showtext:function(b){ var s = $('#said'); if (s) s.textContent = b.dataset.text; },
+  paint:function(b){
+    if (!G || G.mode !== 'paint' || G.answered) return;
+    G.paint = b.dataset.key;
+    document.querySelectorAll('.pal').forEach(function(p){ p.setAttribute('aria-pressed', p === b ? 'true' : 'false'); });
+  },
+  flip:function(b){ flip(+b.dataset.i); },
+  dict:function(){ renderDict(); show('dict'); },
+  hints:function(){ S.hints = !S.hints; save(); renderMap(); },
+  sound:function(){ S.sound = !S.sound; save(); renderMap(); if (S.sound) sfx('good'); },
+  pat:function(){ S.pat = !S.pat; save(); renderMap(); },
+  cls:function(){ S.cls = !S.cls; T = {s:[0,0], turn:0}; save(); renderMap(); },
+  resetteams:function(){ T = {s:[0,0], turn:0}; },
+  copyres:copyResult,
+  unlock:function(){ S.all = true; save(); renderMap(); },
+  reset:function(b){
+    if (!resetArmed) {
+      resetArmed = true; b.textContent = 'Tap again to reset';
+      setTimeout(function(){ resetArmed = false; b.textContent = 'Reset progress'; }, 3000);
+      return;
+    }
+    S.done = {easy:{}, medium:{}, hard:{}}; S.bonus = {memory:{}, paint:{}, rush:{}}; S.all = false; save();
+    resetArmed = false; b.textContent = 'Reset progress'; renderMap();
+  },
+  again:function(){ if (G.mode === 'level') startGame('level', G.li); else startGame(G.mode); },
+  nextlevel:function(){ startGame('level', G.li + 1); }
+};
+document.addEventListener('click', function(e){
+  var part = e.target.closest && e.target.closest('[data-part]');
+  if (part) { onPart(part); return; }
+  var b = e.target.closest('button');
+  if (!b || b.disabled) return;
+  if (b.dataset.act && acts[b.dataset.act]) acts[b.dataset.act](b);
+  else if (b.dataset.say) say(b.dataset.say);
+});
+document.addEventListener('keydown', function(e){
+  var part = e.target.closest && e.target.closest('[data-part]');
+  if (part && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); onPart(part); return; }
+  if ($('#screen-game').hidden || !G) return;
+  if (e.key === 'Enter' && !$('#next').hidden) { e.preventDefault(); nextQ(); return; }
+  if (e.target && e.target.tagName === 'INPUT') return;
+  var n = parseInt(e.key, 10);
+  if (n >= 1 && n <= 9 && (G.mode === 'rush' || !G.answered)) {
+    var b = document.querySelectorAll('#q-body .opt')[n - 1];
+    if (b && !b.disabled) onOpt(b);
+  }
+});
+$('#pupil-name').addEventListener('input', function(e){ S.name = e.target.value.slice(0, 30); save(); });
+
+load();
+renderMap();
+show('map');
+})();
+</script>
+
+</body></html>
